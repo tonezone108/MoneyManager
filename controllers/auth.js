@@ -1,5 +1,5 @@
 const mysql = require("mysql");
-// const bcrypt = require('bcrypt')
+const bcryptjs = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const pool = require("../sql/connection");
 const { handleSQLError } = require("../sql/error");
@@ -8,11 +8,11 @@ const { handleSQLError } = require("../sql/error");
 const saltRounds = 10;
 
 const signup = (req, res) => {
-  const { username, password } = req.body;
-  let sql = "INSERT INTO users (username, password) VALUES (?, ?)";
+  const { userName, userPassword } = req.body;
+  let sql = "INSERT INTO users (userName, userPassword) VALUES (?, ?)";
 
-  bcrypt.hash(password, saltRounds, function(err, hash) {
-    sql = mysql.format(sql, [username, hash]);
+  bcryptjs.hash(userPassword, saltRounds, function(err, hash) {
+    sql = mysql.format(sql, [userName, hash]);
 
     pool.query(sql, (err, result) => {
       if (err) {
@@ -26,16 +26,16 @@ const signup = (req, res) => {
 };
 
 const login = (req, res) => {
-  const { username, password } = req.body;
-  let sql = "SELECT * FROM users WHERE username = ?";
-  sql = mysql.format(sql, [username]);
+  const { userName, userPassword } = req.body;
+  let sql = "SELECT * FROM users WHERE userName = ?";
+  sql = mysql.format(sql, [userName]);
 
   pool.query(sql, (err, rows) => {
     if (err) return handleSQLError(res, err);
     if (!rows.length) return res.status(404).send("No matching users");
 
-    const hash = rows[0].password;
-    bcrypt.compare(password, hash).then(result => {
+    const hash = rows[0].userPassword;
+    bcryptjs.compare(userPassword, hash).then(result => {
       if (!result) return res.status(400).send("Invalid password");
 
       const data = { ...rows[0] };

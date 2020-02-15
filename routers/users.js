@@ -12,7 +12,7 @@ router.post("/", authenticate, usersController.createUser);
 router.put("/:id", authenticate, usersController.updateUserById);
 
 router.delete(
-  "/:first_name",
+  "/:userName",
   authenticate,
   usersController.deleteUserByFirstName
 );
